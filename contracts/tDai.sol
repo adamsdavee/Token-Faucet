@@ -6,16 +6,16 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 error LendingDAIToken__NotOwner();
 
-contract LendingDaiToken is ERC20 {
+contract LendingDAIToken is ERC20 {
 
     address public immutable i_owner;
 
-    constructor() ERC20("LendingDaiToken", "DAI") {
+    constructor() ERC20("LendingDAIToken", "DAI") {
         i_owner = msg.sender;
     }
 
     modifier onlyOwner() {
-        if(i_owner != msg.sender) revert LendingDaiToken__NotOwner();
+        if(i_owner != msg.sender) revert LendingDAIToken__NotOwner();
         _;
     }
 
