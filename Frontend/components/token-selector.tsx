@@ -6,15 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Copy, Check, ExternalLink, Send } from "lucide-react"
+import { Copy, Check, ExternalLink, Wallet } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { tokens, type Token } from "@/lib/tokens"
 
-export function TokenSelector() {
+interface TokenSelectorProps {
+  walletAddress: string
+}
+
+export function TokenSelector({ walletAddress }: TokenSelectorProps) {
   const [selectedToken, setSelectedToken] = useState<Token | null>(null)
-  const [recipientAddress, setRecipientAddress] = useState("")
   const [amount, setAmount] = useState("1000")
-  const [isSending, setIsSending] = useState(false)
+  const [isMinting, setIsMinting] = useState(false)
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
 
@@ -46,66 +49,72 @@ export function TokenSelector() {
     }
   }
 
-  const isValidAddress = (address: string) => {
-    return /^0x[a-fA-F0-9]{40}$/.test(address)
-  }
+  const handleMint = async () => {
+    if (!selectedToken || !amount || !walletAddress) return
 
-  const handleSend = async () => {
-    if (!selectedToken || !amount || !recipientAddress) return
-
-    if (!isValidAddress(recipientAddress)) {
-      toast({
-        title: "Invalid Address",
-        description: "Please enter a valid Ethereum address",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsSending(true)
+    setIsMinting(true)
 
     try {
-      // Placeholder for faucet backend call
-      // In production: call faucet API to send tokens
-      // await sendTokens(selectedToken.address, recipientAddress, amount)
+      // Placeholder for smart contract interaction
+      // In production: call the mint function on the token contract
+      // const contract = new ethers.Contract(selectedToken.address, abi, signer)
+      // const tx = await contract.mint(walletAddress, ethers.parseUnits(amount, selectedToken.decimals))
+      // await tx.wait()
+
       await new Promise((resolve) => setTimeout(resolve, 3000)) // Simulate transaction
 
       toast({
-        title: "Tokens Sent Successfully! 🎉",
-        description: `${amount} ${selectedToken.symbol} sent to ${recipientAddress.slice(0, 6)}...${recipientAddress.slice(-4)}`,
+        title: "Mint Successful! 🎉",
+        description: `Successfully minted ${amount} ${selectedToken.symbol} to your wallet`,
         duration: 5000,
       })
 
-      // Reset form
-      setRecipientAddress("")
+      // Reset amount to default
       setAmount("1000")
     } catch (error) {
       toast({
-        title: "Send Failed",
-        description: "Failed to send tokens. Please try again.",
+        title: "Mint Failed",
+        description: "Transaction failed. Please try again.",
         variant: "destructive",
       })
     } finally {
-      setIsSending(false)
+      setIsMinting(false)
     }
+  }
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 8)}...${address.slice(-8)}`
   }
 
   return (
     <Card className="w-full shadow-xl border border-slate-200 bg-white">
       <CardHeader className="pb-6">
-        <CardTitle className="text-2xl font-bold text-slate-900 text-center">Request Test Tokens</CardTitle>
+        <CardTitle className="text-2xl font-bold text-slate-900 text-center">Mint Test Tokens</CardTitle>
         <p className="text-slate-600 text-center">
-          Select a token, enter your address, and receive test tokens instantly
+          Select a token and amount to mint directly to your connected wallet
         </p>
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Connected Wallet Display */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+              <Wallet className="w-5 h-5 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-green-900">Connected Wallet</h4>
+              <p className="text-sm font-mono text-green-700">{walletAddress}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Token Selector */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700">Select Token</label>
           <Select onValueChange={handleTokenSelect}>
             <SelectTrigger className="w-full h-14 text-lg">
-              <SelectValue placeholder="Choose a test token..." />
+              <SelectValue placeholder="Choose a test token to mint..." />
             </SelectTrigger>
             <SelectContent>
               {tokens.map((token) => (
@@ -187,25 +196,10 @@ export function TokenSelector() {
           </div>
         )}
 
-        {/* Recipient Address Input */}
-        {selectedToken && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Recipient Address</label>
-            <Input
-              type="text"
-              value={recipientAddress}
-              onChange={(e) => setRecipientAddress(e.target.value)}
-              placeholder="0x... (Enter your wallet address)"
-              className="text-sm font-mono h-12"
-            />
-            <p className="text-xs text-slate-500">Enter the address where you want to receive the test tokens</p>
-          </div>
-        )}
-
         {/* Amount Input */}
         {selectedToken && (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Amount to Send</label>
+            <label className="text-sm font-medium text-slate-700">Amount to Mint</label>
             <Input
               type="number"
               value={amount}
@@ -244,37 +238,36 @@ export function TokenSelector() {
           </div>
         )}
 
-        {/* Send Button */}
+        {/* Mint Button */}
         {selectedToken && (
           <Button
-            onClick={handleSend}
+            onClick={handleMint}
             disabled={
               !selectedToken ||
               !amount ||
-              !recipientAddress ||
-              !isValidAddress(recipientAddress) ||
-              isSending ||
+              !walletAddress ||
+              isMinting ||
               Number.parseInt(amount) > selectedToken.maxMint
             }
             className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-4 text-lg transition-all duration-200 disabled:opacity-50 h-14"
           >
-            {isSending ? (
+            {isMinting ? (
               <div className="flex items-center space-x-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Sending {selectedToken.symbol}...</span>
+                <span>Minting {selectedToken.symbol}...</span>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Send className="w-5 h-5" />
+                <Wallet className="w-5 h-5" />
                 <span>
-                  Send {amount} {selectedToken.symbol}
+                  Mint {amount} {selectedToken.symbol}
                 </span>
               </div>
             )}
           </Button>
         )}
 
-        {/* Rate Limiting Info */}
+        {/* Transaction Info */}
         {selectedToken && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start space-x-2">
@@ -282,11 +275,12 @@ export function TokenSelector() {
                 <span className="text-white text-xs">ℹ</span>
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-semibold text-blue-900 mb-1">Faucet Limits</h4>
+                <h4 className="text-sm font-semibold text-blue-900 mb-1">Transaction Details</h4>
                 <p className="text-xs text-blue-700">
-                  • Maximum {selectedToken.maxMint.toLocaleString()} {selectedToken.symbol} per request
-                  <br />• One request per address every 24 hours
-                  <br />• Tokens are sent directly to your specified address
+                  • Tokens will be minted directly to your connected wallet
+                  <br />• You'll need to confirm the transaction in your wallet
+                  <br />• Gas fees will be paid in tCORE (Core Testnet native token)
+                  <br />• Transaction will appear in your wallet after confirmation
                 </p>
               </div>
             </div>
