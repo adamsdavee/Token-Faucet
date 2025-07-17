@@ -5,10 +5,14 @@ import { Navbar } from "@/components/navbar"
 import { NetworkModal } from "@/components/network-modal"
 import { TokenSelector } from "@/components/token-selector"
 import { Toaster } from "@/components/ui/toaster"
+import { toast } from "@/hooks/use-toast"
+import { ethers } from "ethers"
 
 export default function FaucetPage() {
   const [isConnected, setIsConnected] = useState(false)
   const [walletAddress, setWalletAddress] = useState("")
+  const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null)
+  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null)
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(true)
   const [showNetworkModal, setShowNetworkModal] = useState(false)
 
@@ -16,14 +20,32 @@ export default function FaucetPage() {
     try {
       // Placeholder wallet connection logic
       // In production, integrate with Wagmi or Ethers.js
-      // const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-      // setWalletAddress(accounts[0])
+      if (!(window as any).ethereum) {
+        toast({
+          title: "Wallet not found",
+          description: "Please install MetaMask or another Web3 wallet",
+          variant: "destructive",
+        })
+        return
+      }
 
-      setWalletAddress("0x1234567890123456789012345678901234567890") // Placeholder
+      const provider = new ethers.BrowserProvider((window as any).ethereum)
+      const accounts = await provider.send("eth_requestAccounts", [])
+      const network = await provider.getNetwork()
+      const signee = await provider.getSigner();
+
+      setProvider(provider)
+      // setAccount(accounts[0])
+      setSigner(signee)
+      // setChainId(Number(network.chainId))
+      // const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+      setWalletAddress(accounts[0])
+
+      // setWalletAddress("0x1234567890123456789012345678901234567890") // Placeholder
       setIsConnected(true)
 
       // Simulate network check
-      const isOnCoreTestnet = Math.random() > 0.3 // Higher chance of correct network for demo
+      const isOnCoreTestnet = Number(network.chainId) == 1114 // Higher chance of correct network for demo
       setIsCorrectNetwork(isOnCoreTestnet)
       if (!isOnCoreTestnet) {
         setShowNetworkModal(true)
@@ -124,7 +146,7 @@ export default function FaucetPage() {
           </div>
         ) : (
           <div className="max-w-2xl mx-auto">
-            <TokenSelector walletAddress={walletAddress} />
+            <TokenSelector walletAddress={walletAddress} signer={signer} />
           </div>
         )}
 

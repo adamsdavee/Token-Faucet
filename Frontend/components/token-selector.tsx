@@ -9,12 +9,15 @@ import { Badge } from "@/components/ui/badge"
 import { Copy, Check, ExternalLink, Wallet } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { tokens, type Token } from "@/lib/tokens"
+import { CONTRACT_ABI } from "@/lib/constants"
+import {ethers} from "ethers"
 
 interface TokenSelectorProps {
   walletAddress: string
+  signer: ethers.JsonRpcSigner | null
 }
 
-export function TokenSelector({ walletAddress }: TokenSelectorProps) {
+export function TokenSelector({ walletAddress, signer }: TokenSelectorProps) {
   const [selectedToken, setSelectedToken] = useState<Token | null>(null)
   const [amount, setAmount] = useState("1000")
   const [isMinting, setIsMinting] = useState(false)
@@ -57,11 +60,10 @@ export function TokenSelector({ walletAddress }: TokenSelectorProps) {
     try {
       // Placeholder for smart contract interaction
       // In production: call the mint function on the token contract
-      // const contract = new ethers.Contract(selectedToken.address, abi, signer)
-      // const tx = await contract.mint(walletAddress, ethers.parseUnits(amount, selectedToken.decimals))
-      // await tx.wait()
+      const contract = new ethers.Contract(selectedToken.address, CONTRACT_ABI, signer)
+      const tx = await contract.mint(walletAddress, ethers.parseUnits(amount, selectedToken.decimals))
+      await tx.wait()
 
-      await new Promise((resolve) => setTimeout(resolve, 3000)) // Simulate transaction
 
       toast({
         title: "Mint Successful! 🎉",
