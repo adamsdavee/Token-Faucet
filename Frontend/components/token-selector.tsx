@@ -61,7 +61,7 @@ export function TokenSelector({ walletAddress, signer }: TokenSelectorProps) {
       // Placeholder for smart contract interaction
       // In production: call the mint function on the token contract
       const contract = new ethers.Contract(selectedToken.address, CONTRACT_ABI, signer)
-      const tx = await contract.mint(walletAddress, ethers.parseUnits(amount, selectedToken.decimals))
+      const tx = await contract.mint(walletAddress, ethers.parseUnits(amount, 18))
       await tx.wait()
 
 
