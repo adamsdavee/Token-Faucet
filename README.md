@@ -32,7 +32,7 @@ Tokens available for request:
 
 ## 🔗 Live Faucet Interface
 
-👉 [**http://localhost:3000/loans**](http://localhost:3000/loans) — *Frontend placeholder for local testing*
+👉 [**https://token-faucet-sandy.vercel.app/**](https://token-faucet-sandy.vercel.app/) — *Frontend placeholder for local testing*
 
 ---
 
@@ -117,4 +117,4 @@ This faucet is intended for **testing and development only**. Tokens dispensed h
 **David Kenechukwu**
 
 * GitHub: [@adamsdavee](https://github.com/adamsdavee)
-* Live Frontend: [http://localhost:3000/loans](http://localhost:3000/loans)
+* Live Frontend: [http://localhost:3000/loans](https://token-faucet-sandy.vercel.app/)
