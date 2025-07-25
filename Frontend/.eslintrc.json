@@ -5,6 +5,8 @@
     "@typescript-eslint/no-unused-vars": "off", // Disable unused variables check
     "@typescript-eslint/no-unused-expressions": "off", // Disable unused expressions check
     "react-hooks/exhaustive-deps": "off", // Suppress missing dependency warnings in useEffect
-    "@next/next/no-img-element": "off" 
+    "@next/next/no-img-element": "off", 
+    "react/no-unescaped-entities": "off"
+
   }
 }
